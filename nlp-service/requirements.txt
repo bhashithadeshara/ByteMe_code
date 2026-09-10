@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+spacy>=3.7
+scikit-learn
+beautifulsoup4
+sqlalchemy
+psycopg2-binary
+pytest

@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: bridgeup_postgres
+    environment:
+      POSTGRES_USER: bridgeup
+      POSTGRES_PASSWORD: bridgeup_dev
+      POSTGRES_DB: bridgeup_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: bridgeup_redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    container_name: bridgeup_backend
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - DATABASE_URL=postgresql://bridgeup:bridgeup_dev@postgres:5432/bridgeup_db
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build: ./frontend
+    container_name: bridgeup_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+  nlp-service:
+    build: ./nlp-service
+    container_name: bridgeup_nlp
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://bridgeup:bridgeup_dev@postgres:5432/bridgeup_db
+    depends_on:
+      - postgres
+    volumes:
+      - ./nlp-service:/app
+
+networks:
+  default:
+    name: bridgeup_network
+
+volumes:
+  postgres_data:
